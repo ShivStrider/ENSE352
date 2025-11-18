@@ -1,7 +1,9 @@
 # ENSE 352 Term Project: Mastermind
 
 **Name:** Shivam Jigneshbhai Soni
+
 **Course:** ENSE 352 - Fundamentals of Computer Systems Architectures
+
 **Instructor:** Cameron Oehler
 
 ## Project Description
@@ -50,4 +52,5 @@ The project uses the following pin connections on the Nucleo board:
 The final version will include:
 * Comparison logic to check the user's guess against a generated secret code.
 * Feedback using LEDs: Solid LEDs for correct number/correct place, flashing LEDs for correct number/wrong place.
+
 * Win/Loss states (blinking sequences) after 8 attempts.
