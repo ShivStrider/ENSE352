@@ -9,48 +9,78 @@
 ## Project Description
 This project is a C implementation of the code-breaking game "Mastermind" on the STM32F103RB (Nucleo) microcontroller.
 
-The goal of the game is to enter a 4-digit hexadecimal code (using DIP switches) to guess a secret sequence. This milestone implements the core input logic, allowing the user to input 4 digits sequentially with visual feedback on LEDs.
+## What is Mastermind?
 
-## Hardware Configuration
+Mastermind is a code-breaking game. The computer picks a secret 4-digit code and you have to guess it within 8 tries. After each guess, you get feedback showing how close you were.
 
-The project uses the following pin connections on the Nucleo board:
+## Hardware Setup
 
-### Inputs
-| Component | Pin | Description |
-|-----------|-----|-------------|
-| **DIP Switch 1** | `PB4` | Bit 0 (Value 1) |
-| **DIP Switch 2** | `PB6` | Bit 1 (Value 2) |
-| **DIP Switch 3** | `PB8` | Bit 2 (Value 4) |
-| **DIP Switch 4** | `PB9` | Bit 3 (Value 8) |
-| **User Button** | `PC13`| Confirm Selection |
+- **Nucleo Board:** STM32F103RB
+- **LEDs:** 4 LEDs connected to PA0, PA1, PA4, PB0
+- **DIP Switches:** 4 switches connected to PB4, PB6, PB8, PB9
+- **Button:** Blue user button (PC13)
 
-*Note: DIP switches are connected with pull-up resistors (Active LOW logic).*
+## How to Play
 
-### Outputs (LEDs)
-| Component | Pin | Description |
-|-----------|-----|-------------|
-| **LED 0** | `PB0` | Right-most LED |
-| **LED 1** | `PA4` | Middle-Right LED |
-| **LED 2** | `PA1` | Middle-Left LED |
-| **LED 3** | `PA0` | Left-most LED |
+### Step 1: Start the Game
+Press the blue button to start a new game.
 
-## How to Play (Milestone Demo)
+### Step 2: Enter Your Guess
+You need to enter 4 hex digits (0-15 each).
 
-1.  **Start:** Reset the board. The left-most LED (`PA0`) will turn ON. This indicates the game is waiting for **Digit 1**.
-2.  **Make a Selection:** Set the 4 DIP switches to your desired hex value (0-15).
-    * *Example:* To enter '5', turn on Switch 1 (Value 1) and Switch 3 (Value 4).
-3.  **Confirm:** Press the **Blue User Button**.
-4.  **Next Digit:** The LEDs will update to show which digit needs to be entered next:
-    * **Digit 1:** LED 3 ON (`1000`)
-    * **Digit 2:** LED 3 & 2 ON (`1100`)
-    * **Digit 3:** LED 3, 2 & 1 ON (`1110`)
-    * **Digit 4:** All LEDs ON (`1111`)
-5. **Completion:** After entering the 4th digit, the LEDs will turn off, then **flash twice**. This confirms the guess has been stored in memory.
-6. **Restart:** Press the User Button again to reset the loop and enter a new guess.
+The LEDs show which digit you're entering:
+- Digit 1: `1000` (one LED on)
+- Digit 2: `1100` (two LEDs on)
+- Digit 3: `1110` (three LEDs on)
+- Digit 4: `1111` (all LEDs on)
 
-## Future Implementation (Final Project)
-The final version will include:
-* Comparison logic to check the user's guess against a generated secret code.
-* Feedback using LEDs: Solid LEDs for correct number/correct place, flashing LEDs for correct number/wrong place.
+Set your DIP switches to the value you want, then press the button.
 
-* Win/Loss states (blinking sequences) after 8 attempts.
+**DIP Switch Values:**
+```
+[SW1][SW2][SW3][SW4]
+  8    4    2    1
+```
+
+Examples:
+- Value 1: Turn on SW4 only
+- Value 5: Turn on SW2 and SW4 (4+1=5)
+- Value 15: Turn on all switches (8+4+2+1=15)
+
+### Step 3: Read Feedback
+After your guess, the LEDs show feedback:
+- **Solid LED** = correct digit in correct position
+- **Flashing LED** = correct digit but wrong position
+
+Example: If 2 LEDs are solid and 1 is flashing, you have 2 digits exactly right and 1 digit that's in the code but in the wrong spot.
+
+Press the button to make your next guess.
+
+### Step 4: Win or Lose
+
+**Win:** If you guess all 4 digits correctly:
+- All LEDs blink 4 times
+- Then LEDs show how many guesses you used (in binary)
+
+**Lose:** If you use all 8 guesses:
+- Alternating pattern (1010/0101) blinks 4 times
+
+Press button to play again.
+
+## Files
+
+- `main.c` - The game code
+- `stm32f103rb.h` - Register definitions for the microcontroller
+- `README.md` - This file
+
+## Testing
+
+For testing, you can set `DEBUG_MODE` to 1 in main.c. This makes the secret code always 1,2,3,4.
+
+To test with debug mode: enter 1, 2, 3, 4 using the switches:
+1. SW4 only → press button
+2. SW3 only → press button  
+3. SW3 + SW4 → press button
+4. SW2 only → press button
+
+You should see the win sequence (all LEDs blink 4 times).
