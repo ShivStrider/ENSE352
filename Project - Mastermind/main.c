@@ -11,42 +11,15 @@
 //   - 4 DIP Switches on PB4, PB6, PB8, PB9  
 //   - Blue User Button on PC13
 
-#include "stm32f103rb.h"
+#include "main.h"
 
 // Global Variables
-
 int secret_code[4];   // The 4-digit code the player needs to guess
 int guess[4];         // Stores the player's current guess
 int guess_count;      // How many guesses the player has made
-
-#define MAX_GUESSES 8  // Player loses after 8 wrong guesses
-
-// Used for generating random numbers
-unsigned int random_seed = 12345;
-
-// Function Prototypes
-
-void setup_gpio(void);
-void set_leds(int val);
-int read_switches(void);
-int is_button_pressed(void);
-void wait_for_button_press(void);
-void wait_for_button_release(void);
-void delay(int count);
-
-void generate_secret_code(void);
-void get_player_guess(void);
-void calculate_feedback(int *exact, int *wrong_pos);
-void display_feedback(int exact, int wrong_pos);
-
-void play_game(void);
-void win_sequence(void);
-void lose_sequence(void);
-
-unsigned int get_random(void);
+unsigned int random_seed = 12345;  // Seed for random number generation
 
 // Main Function
-
 int main(void) {
     // Set up all the GPIO pins first
     setup_gpio();
@@ -104,10 +77,6 @@ void play_game(void) {
 
 // Generate a random 4-digit secret code
 // Each digit is 0-15 (hex 0-F)
-// Set DEBUG_MODE to 1 for testing (code will be 1,2,3,4)
-// Set DEBUG_MODE to 0 for actual gameplay (random code)
-#define DEBUG_MODE 0  // Set to 1 for testing, 0 for random
-
 void generate_secret_code(void) {
 #if DEBUG_MODE
     // Hardcoded for testing - guess 1,2,3,4 to win
@@ -288,10 +257,10 @@ void lose_sequence(void) {
 // LED Functions
 
 // Set the 4 LEDs based on a 4-bit value (0-15)
-// Bit 0 (value 1) -> LED on PB0 (A3)
-// Bit 1 (value 2) -> LED on PA4 (A2)
-// Bit 2 (value 4) -> LED on PA1 (A1)
-// Bit 3 (value 8) -> LED on PA0 (A0)
+// Bit 0 (value 1) -> LED on PB0 (Arduino A3)
+// Bit 1 (value 2) -> LED on PA4 (Arduino A2)
+// Bit 2 (value 4) -> LED on PA1 (Arduino A1)
+// Bit 3 (value 8) -> LED on PA0 (Arduino A0)
 // Example: set_leds(5) = 0101 = LEDs on PA1 and PB0 turn on
 void set_leds(int val) {
     // LED 0 (PB0) - check bit 0
