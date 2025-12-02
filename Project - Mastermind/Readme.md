@@ -70,6 +70,7 @@ Press button to play again.
 ## Files
 
 - `main.c` - The game code
+- `main.h` - Header file with defines and function prototypes
 - `stm32f103rb.h` - Register definitions for the microcontroller
 - `README.md` - This file
 
@@ -84,3 +85,4 @@ To test with debug mode: enter 1, 2, 3, 4 using the switches:
 4. SW2 only → press button
 
 You should see the win sequence (all LEDs blink 4 times).
+
