@@ -1,20 +1,19 @@
-/*
- * ENSE 352 Term Project - Mastermind Game
- * Author: Shivam
- * 
- * This program implements the Mastermind code-breaking game on the
- * STM32F103RB Nucleo board. The player tries to guess a 4-digit 
- * hex code within 8 attempts.
- * 
- * Hardware Used:
- *   - 4 LEDs on PA0, PA1, PA4, PB0
- *   - 4 DIP Switches on PB4, PB6, PB8, PB9  
- *   - Blue User Button on PC13
- */
+// main.c 
+// ENSE352 
+// DATE: December 2, 2025
+// AUTHOR: Shivam Soni (200474721) 
+// DESCRIPTION: This program implements the Mastermind code-breaking game on the
+// STM32F103RB Nucleo board. The player tries to guess a 4-digit 
+// hex code within 8 attempts.
+// 
+// Hardware Used:
+//   - 4 LEDs on PA0, PA1, PA4, PB0
+//   - 4 DIP Switches on PB4, PB6, PB8, PB9  
+//   - Blue User Button on PC13
 
 #include "stm32f103rb.h"
 
-// ============== Global Variables ==============
+// Global Variables
 
 int secret_code[4];   // The 4-digit code the player needs to guess
 int guess[4];         // Stores the player's current guess
@@ -25,7 +24,7 @@ int guess_count;      // How many guesses the player has made
 // Used for generating random numbers
 unsigned int random_seed = 12345;
 
-// ============== Function Prototypes ==============
+// Function Prototypes
 
 void setup_gpio(void);
 void set_leds(int val);
@@ -46,7 +45,7 @@ void lose_sequence(void);
 
 unsigned int get_random(void);
 
-// ============== Main Function ==============
+// Main Function
 
 int main(void) {
     // Set up all the GPIO pins first
@@ -64,11 +63,9 @@ int main(void) {
     }
 }
 
-// ============== Game Functions ==============
+// Game Functions
 
-/*
- * Main game loop - runs one complete game
- */
+// Main game loop - runs one complete game
 void play_game(void) {
     int exact, wrong_pos;
     
@@ -105,14 +102,11 @@ void play_game(void) {
     lose_sequence();
 }
 
-/*
- * Generate a random 4-digit secret code
- * Each digit is 0-15 (hex 0-F)
- * 
- * TIP: For debugging, uncomment the hardcoded values below
- * so you know what the code is while testing
- */
-#define DEBUG_MODE 1  // Set to 0 for random code, 1 for testing
+// Generate a random 4-digit secret code
+// Each digit is 0-15 (hex 0-F)
+// Set DEBUG_MODE to 1 for testing (code will be 1,2,3,4)
+// Set DEBUG_MODE to 0 for actual gameplay (random code)
+#define DEBUG_MODE 0  // Set to 1 for testing, 0 for random
 
 void generate_secret_code(void) {
 #if DEBUG_MODE
@@ -129,15 +123,12 @@ void generate_secret_code(void) {
 #endif
 }
 
-/*
- * Get 4 hex digits from the player using DIP switches
- * 
- * LEDs show which digit we're waiting for:
- *   Digit 1: 1000 (LED 3 on)
- *   Digit 2: 1100 (LEDs 3,2 on)
- *   Digit 3: 1110 (LEDs 3,2,1 on)
- *   Digit 4: 1111 (all LEDs on)
- */
+// Get 4 hex digits from the player using DIP switches
+// LEDs show which digit we're waiting for:
+//   Digit 1: 1000 (LED 3 on)
+//   Digit 2: 1100 (LEDs 3,2 on)
+//   Digit 3: 1110 (LEDs 3,2,1 on)
+//   Digit 4: 1111 (all LEDs on)
 void get_player_guess(void) {
     int current_digit = 0;
     
@@ -156,8 +147,9 @@ void get_player_guess(void) {
             guess[current_digit] = read_switches();
             current_digit++;
             
-            // Debounce - wait a bit and make sure button is released
-            // This prevents one press from being read multiple times
+            // Debounce the BUTTON (not the DIP switches)
+            // Push buttons bounce when pressed, causing multiple false reads
+            // DIP switches don't bounce since they stay in position
             delay(200000);
             wait_for_button_release();
             delay(200000);
@@ -169,14 +161,11 @@ void get_player_guess(void) {
     delay(300000);
 }
 
-/*
- * Calculate feedback for the guess using Mastermind rules:
- *   - exact: digit is correct AND in the right position
- *   - wrong_pos: digit exists in code but wrong position
- * 
- * This is the tricky part - we need to avoid counting the same
- * digit twice. We use arrays to track which digits are "used up"
- */
+// Calculate feedback for the guess using Mastermind rules:
+//   - exact: digit is correct AND in the right position
+//   - wrong_pos: digit exists in code but wrong position
+// 
+// We use two passes to avoid counting the same digit twice
 void calculate_feedback(int *exact, int *wrong_pos) {
     
     // These track which positions we've already matched
@@ -217,13 +206,10 @@ void calculate_feedback(int *exact, int *wrong_pos) {
     }
 }
 
-/*
- * Display feedback on LEDs:
- *   - Solid LEDs = exact matches
- *   - Flashing LEDs = wrong position matches
- * 
- * Example: 2 exact + 1 wrong_pos = 2 solid + 1 flashing
- */
+// Display feedback on LEDs:
+//   - Solid LEDs = exact matches
+//   - Flashing LEDs = wrong position matches
+// Example: 2 exact + 1 wrong_pos = 2 solid + 1 flashing
 void display_feedback(int exact, int wrong_pos) {
     int solid_leds = 0;
     int flash_leds = 0;
@@ -255,12 +241,10 @@ void display_feedback(int exact, int wrong_pos) {
     set_leds(solid_leds);
 }
 
-/*
- * Win sequence - player guessed correctly!
- * 1. Blink all 4 LEDs on/off 4 times
- * 2. Show how many guesses it took (in binary)
- * 3. Wait for button to start new game
- */
+// Win sequence - player guessed correctly!
+// 1. Blink all 4 LEDs on/off 4 times
+// 2. Show how many guesses it took (in binary)
+// 3. Wait for button to start new game
 void win_sequence(void) {
     // Blink all LEDs 4 times
     for (int i = 0; i < 4; i++) {
@@ -281,10 +265,8 @@ void win_sequence(void) {
     set_leds(0);
 }
 
-/*
- * Lose sequence - player ran out of guesses
- * Show alternating pattern 4 times then wait for button
- */
+// Lose sequence - player ran out of guesses
+// Show alternating pattern 4 times then wait for button
 void lose_sequence(void) {
     // Blink alternating pattern 4 times
     // 1010 and 0101 look different from the win pattern
@@ -303,18 +285,14 @@ void lose_sequence(void) {
     set_leds(0);
 }
 
-// ============== LED Functions ==============
+// LED Functions
 
-/*
- * Set the 4 LEDs based on a 4-bit value (0-15)
- * 
- * Bit 0 (value 1) -> LED on PB0 (Arduino A3)
- * Bit 1 (value 2) -> LED on PA4 (Arduino A2)
- * Bit 2 (value 4) -> LED on PA1 (Arduino A1)
- * Bit 3 (value 8) -> LED on PA0 (Arduino A0)
- * 
- * Example: set_leds(5) = 0101 = LEDs on PA1 and PB0 turn on
- */
+// Set the 4 LEDs based on a 4-bit value (0-15)
+// Bit 0 (value 1) -> LED on PB0 (A3)
+// Bit 1 (value 2) -> LED on PA4 (A2)
+// Bit 2 (value 4) -> LED on PA1 (A1)
+// Bit 3 (value 8) -> LED on PA0 (A0)
+// Example: set_leds(5) = 0101 = LEDs on PA1 and PB0 turn on
 void set_leds(int val) {
     // LED 0 (PB0) - check bit 0
     if (val & 1)
@@ -341,23 +319,19 @@ void set_leds(int val) {
         GPIOA_ODR &= ~(1 << 0);
 }
 
-// ============== Input Functions ==============
+// Input Functions
 
-/*
- * Read the 4 DIP switches and return value 0-15
- * 
- * Switches are wired with pull-ups so:
- *   Switch ON = reads 0 (LOW)
- *   Switch OFF = reads 1 (HIGH)
- * 
- * Mapping (DIP positions match binary visually):
- *   Switch 1 (PB4) = 8 (MSB)
- *   Switch 2 (PB6) = 4
- *   Switch 3 (PB8) = 2
- *   Switch 4 (PB9) = 1 (LSB)
- * 
- * So to enter 0101 (value 5), turn on switches 2 and 4
- */
+// Read the 4 DIP switches and return value 0-15
+// Switches are wired with pull-ups so:
+//   Switch ON = reads 0 (LOW)
+//   Switch OFF = reads 1 (HIGH)
+// 
+// Mapping (DIP positions match binary visually):
+//   Switch 1 (PB4) = 8 (MSB)
+//   Switch 2 (PB6) = 4
+//   Switch 3 (PB8) = 2
+//   Switch 4 (PB9) = 1 (LSB)
+// So to enter 0101 (value 5), turn on switches 2 and 4
 int read_switches(void) {
     int val = 0;
     
@@ -374,41 +348,33 @@ int read_switches(void) {
     return val;
 }
 
-/*
- * Check if user button is pressed
- * Button is on PC13 and is active-low (0 when pressed)
- */
+// Check if user button is pressed
+// Button is on PC13 and is active-low (0 when pressed)
 int is_button_pressed(void) {
     // Check bit 13 of Port C input register
     // Returns 1 if pressed (bit is 0), 0 if not pressed
     return ((GPIOC_IDR & (1 << 13)) == 0);
 }
 
-/*
- * Wait until button is pressed (blocking)
- */
+// Wait until button is pressed (blocking)
 void wait_for_button_press(void) {
     while (!is_button_pressed()) {
         // Do nothing, just wait
     }
 }
 
-/*
- * Wait until button is released (blocking)
- */
+// Wait until button is released (blocking)
 void wait_for_button_release(void) {
     while (is_button_pressed()) {
         // Do nothing, just wait
     }
 }
 
-// ============== Utility Functions ==============
+// Utility Functions
 
-/*
- * Simple delay using a busy loop
- * The actual time depends on clock speed
- * count ~= 300000 is roughly half a second
- */
+// Simple delay using a busy loop
+// The actual time depends on clock speed
+// count ~= 300000 is roughly half a second
 void delay(int count) {
     // volatile so compiler doesn't optimize this away
     volatile int i = 0;
@@ -417,41 +383,33 @@ void delay(int count) {
     }
 }
 
-/*
- * Generate a pseudo-random number
- * Uses Linear Congruential Generator (LCG) algorithm
- * Not cryptographically secure but good enough for a game
- */
+// Generate a pseudo-random number using LCG algorithm
+// Not cryptographically secure but good enough for a game
 unsigned int get_random(void) {
     // Standard LCG formula: seed = (a * seed + c) mod m
     random_seed = (random_seed * 1103515245 + 12345) & 0x7FFFFFFF;
     return random_seed;
 }
 
-// ============== GPIO Setup ==============
+// GPIO Setup
 
-/*
- * Configure all the GPIO pins we need
- * 
- * This is kind of tedious but basically we need to:
- * 1. Enable the clock for each GPIO port we use
- * 2. Set each pin as input or output with the right mode
- * 
- * For STM32F103, the config registers work like this:
- *   - CRL controls pins 0-7, CRH controls pins 8-15
- *   - Each pin uses 4 bits: 2 for MODE, 2 for CNF
- *   - Output push-pull 50MHz = 0x3
- *   - Input floating = 0x4
- */
+// Configure all the GPIO pins we need
+// 1. Enable the clock for each GPIO port we use
+// 2. Set each pin as input or output with the right mode
+// 
+// For STM32F103, the config registers work like this:
+//   - CRL controls pins 0-7, CRH controls pins 8-15
+//   - Each pin uses 4 bits: 2 for MODE, 2 for CNF
+//   - Output push-pull 50MHz = 0x3
+//   - Input floating = 0x4
 void setup_gpio(void) {
     
-    // Step 1: Enable clocks for GPIO ports A, B, C
+    // Enable clocks for GPIO ports A, B, C
     // Without this, the ports won't work at all
     // Bit 2 = GPIOA, Bit 3 = GPIOB, Bit 4 = GPIOC
     RCC_APB2ENR |= (1 << 2) | (1 << 3) | (1 << 4);
     
-    // Step 2: Configure LED pins as outputs
-    // We use push-pull output at 50MHz (code = 0x3)
+    // Configure LED pins as outputs (push-pull, 50MHz = 0x3)
     
     // PA0 (LED 3) - bits [3:0] of CRL
     GPIOA_CRL &= ~(0xF << 0);   // Clear the 4 bits first
@@ -469,8 +427,7 @@ void setup_gpio(void) {
     GPIOB_CRL &= ~(0xF << 0);
     GPIOB_CRL |= (0x3 << 0);
     
-    // Step 3: Configure switch pins as inputs
-    // Floating input mode (code = 0x4)
+    // Configure switch pins as inputs (floating input = 0x4)
     
     // PB4 (Switch 1) - bits [19:16] of CRL
     GPIOB_CRL &= ~(0xF << 16);
@@ -488,7 +445,6 @@ void setup_gpio(void) {
     GPIOB_CRH &= ~(0xF << 4);
     GPIOB_CRH |= (0x4 << 4);
     
-    // Step 4: Configure button pin as input
     // PC13 (User Button) - bits [23:20] of CRH
     GPIOC_CRH &= ~(0xF << 20);
     GPIOC_CRH |= (0x4 << 20);
